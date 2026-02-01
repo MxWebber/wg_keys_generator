@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WireGuard Key Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
+      transition: background 0.38s, color 0.38s;
+    }
+
+    /* Theme variables will be set via JS */
+    body.light {
+      --bg: #eef2f7;
+      --bg-card: rgba(255,255,255,0.88);
+      --border: rgba(0,0,0,0.08);
+      --border-accent-pub: rgba(6,182,212,0.32);
+      --border-accent-priv: rgba(220,38,38,0.28);
+      --glow-pub: rgba(6,182,212,0.1);
+      --glow-priv: rgba(220,38,38,0.08);
+      --accent-pub: #0891b2;
+      --accent-priv: #dc2626;
+      --accent-pub-dim: rgba(6,182,212,0.55);
+      --accent-priv-dim: rgba(220,38,38,0.5);
+      --dot-pub: #06b6d4;
+      --dot-priv: #dc2626;
+      --text-primary: #1e293b;
+      --text-muted: #94a3b8;
+      --text-key: #334155;
+      --btn-bg: rgba(0,0,0,0.04);
+      --btn-bg-hover: rgba(0,0,0,0.09);
+      --btn-border: rgba(0,0,0,0.1);
+      --btn-text: #64748b;
+      --btn-text-hover: #1e293b;
+      --btn-ok-bg: rgba(22,163,74,0.1);
+      --btn-ok-border: rgba(22,163,74,0.3);
+      --btn-ok-text: #16a34a;
+      --gen-bg: linear-gradient(135deg,rgba(6,182,212,0.1),rgba(99,102,241,0.07));
+      --gen-bg-hover: linear-gradient(135deg,rgba(6,182,212,0.18),rgba(99,102,241,0.14));
+      --gen-border: rgba(6,182,212,0.38);
+      --gen-border-hover: rgba(6,182,212,0.58);
+      --gen-text: #0891b2;
+      --gen-glow: rgba(6,182,212,0.16);
+      --status-bg: rgba(0,0,0,0.03);
+      --status-border: rgba(0,0,0,0.07);
+      --status-text: #94a3b8;
+      --status-dot: #16a34a;
+      --shield-color: #0891b2;
+      --shield-bg: linear-gradient(135deg,rgba(6,182,212,0.1),rgba(99,102,241,0.07));
+      --shield-border: rgba(6,182,212,0.22);
+      --orb1: rgba(6,182,212,0.07);
+      --orb2: rgba(220,38,38,0.04);
+      --orb3: rgba(99,102,241,0.04);
+      --grid: rgba(6,182,212,0.028);
+      --toggle-track: #cbd5e1;
+      --toggle-thumb: #ffffff;
+      --toggle-icon: #64748b;
+    }
+
+    body.dark {
+      --bg: #060d1f;
+      --bg-card: rgba(15,23,42,0.72);
+      --border: rgba(148,163,184,0.1);
+      --border-accent-pub: rgba(56,189,248,0.25);
+      --border-accent-priv: rgba(239,68,68,0.25);
+      --glow-pub: rgba(56,189,248,0.1);
+      --glow-priv: rgba(239,68,68,0.1);
+      --accent-pub: #38bdf8;
+      --accent-priv: #ef4444;
+      --accent-pub-dim: rgba(56,189,248,0.6);
+      --accent-priv-dim: rgba(239,68,68,0.6);
+      --dot-pub: #38bdf8;
+      --dot-priv: #ef4444;
+      --text-primary: #f1f5f9;
+      --text-muted: rgba(148,163,184,0.45);
+      --text-key: #cbd5e1;
+      --btn-bg: rgba(148,163,184,0.08);
+      --btn-bg-hover: rgba(148,163,184,0.15);
+      --btn-border: rgba(148,163,184,0.18);
+      --btn-text: #94a3b8;
+      --btn-text-hover: #e2e8f0;
+      --btn-ok-bg: rgba(34,197,94,0.14);
+      --btn-ok-border: rgba(34,197,94,0.35);
+      --btn-ok-text: #22c55e;
+      --gen-bg: linear-gradient(135deg,rgba(56,189,248,0.12),rgba(99,102,241,0.12));
+      --gen-bg-hover: linear-gradient(135deg,rgba(56,189,248,0.22),rgba(99,102,241,0.2));
+      --gen-border: rgba(56,189,248,0.3);
+      --gen-border-hover: rgba(56,189,248,0.5);
+      --gen-text: #38bdf8;
+      --gen-glow: rgba(56,189,248,0.15);
+      --status-bg: rgba(15,23,42,0.5);
+      --status-border: rgba(148,163,184,0.1);
+      --status-text: rgba(148,163,184,0.45);
+      --status-dot: #22c55e;
+      --shield-color: #38bdf8;
+      --shield-bg: linear-gradient(135deg,rgba(56,189,248,0.1),rgba(99,102,241,0.1));
+      --shield-border: rgba(56,189,248,0.2);
+      --orb1: rgba(56,189,248,0.07);
+      --orb2: rgba(239,68,68,0.055);
+      --orb3: rgba(99,102,241,0.045);
+      --grid: rgba(56,189,248,0.028);
+      --toggle-track: #1e293b;
+      --toggle-thumb: #0f172a;
+      --toggle-icon: #64748b;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text-primary);
+    }
+
+    .grid-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image: linear-gradient(var(--grid) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 54px 54px;
+      transition: background-image 0.4s;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(68px);
+      pointer-events: none;
+      z-index: 0;
+      transition: background 0.5s;
+    }
+
+    .orb-1 {
+      width: 280px;
+      height: 280px;
+      top: -60px;
+      left: -40px;
+      background: var(--orb1);
+    }
+
+    .orb-2 {
+      width: 220px;
+      height: 220px;
+      bottom: -45px;
+      right: -25px;
+      background: var(--orb2);
+    }
+
+    .orb-3 {
+      width: 150px;
+      height: 150px;
+      top: 42%;
+      left: 58%;
+      background: var(--orb3);
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 40px 22px 52px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .shield-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--shield-bg);
+      border: 1px solid var(--shield-border);
+      color: var(--shield-color);
+      transition: all 0.35s;
+    }
+
+    .title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      transition: color 0.35s;
+    }
+
+    .subtitle {
+      font-size: 9.5px;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text-muted);
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      transition: color 0.35s;
+      margin-top: 2px;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 0;
+    }
+
+    .theme-icon {
+      color: var(--toggle-icon);
+      display: flex;
+      transition: opacity 0.3s;
+    }
+
+    .toggle-track {
+      width: 42px;
+      height: 22px;
+      border-radius: 11px;
+      background: var(--toggle-track);
+      position: relative;
+      transition: background 0.35s ease;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.18);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--toggle-thumb);
+      transition: left 0.32s cubic-bezier(0.4,0,0.2,1), box-shadow 0.3s;
+    }
+
+    body.light .toggle-thumb {
+      left: 1px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.22);
+    }
+
+    body.dark .toggle-thumb {
+      left: 21px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.45);
+    }
+
+    body.light .theme-icon.sun { opacity: 0.8; }
+    body.light .theme-icon.moon { opacity: 0.35; }
+    body.dark .theme-icon.sun { opacity: 0.35; }
+    body.dark .theme-icon.moon { opacity: 0.8; }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 0 auto 20px;
+      padding: 8px 14px;
+      background: var(--status-bg);
+      border: 1px solid var(--status-border);
+      border-radius: 8px;
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      color: var(--status-text);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.35s;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--status-dot);
+      box-shadow: 0 0 4px var(--status-dot);
+    }
+
+    .status-divider {
+      width: 1px;
+      height: 10px;
+      background: var(--border);
+    }
+
+    .gen-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 0;
+      background: var(--gen-bg);
+      border: 1px solid var(--gen-border);
+      border-radius: 11px;
+      color: var(--gen-text);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-bottom: 20px;
+    }
+
+    .gen-btn:hover {
+      background: var(--gen-bg-hover);
+      border-color: var(--gen-border-hover);
+      box-shadow: 0 0 20px var(--gen-glow);
+    }
+
+    .gen-btn:active {
+      transform: scale(0.97);
+    }
+
+    .gen-btn.generating .refresh-icon {
+      animation: spin 0.5s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .keys-container {
+      animation: fadeUp 0.32s ease;
+    }
+
+    .key-field {
+      position: relative;
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 19px 21px;
+      margin-bottom: 13px;
+      backdrop-filter: blur(10px);
+      transition: all 0.35s ease;
+    }
+
+    .key-field.private {
+      border: 1px solid var(--border-accent-priv);
+      box-shadow: 0 0 0 1px var(--glow-priv) inset, 0 3px 18px rgba(0,0,0,0.08);
+    }
+
+    .key-field.public {
+      border: 1px solid var(--border-accent-pub);
+      box-shadow: 0 0 0 1px var(--glow-pub) inset, 0 3px 18px rgba(0,0,0,0.08);
+    }
+
+    .corner-accent {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      pointer-events: none;
+    }
+
+    .corner-top-left {
+      top: 0;
+      left: 0;
+      border-radius: 12px 0 0 0;
+    }
+
+    .corner-bottom-right {
+      bottom: 0;
+      right: 0;
+      border-radius: 0 0 12px 0;
+    }
+
+    .key-field.private .corner-top-left {
+      border-top: 2px solid var(--accent-priv-dim);
+      border-left: 2px solid var(--accent-priv-dim);
+    }
+
+    .key-field.private .corner-bottom-right {
+      border-bottom: 2px solid var(--accent-priv-dim);
+      border-right: 2px solid var(--accent-priv-dim);
+    }
+
+    .key-field.public .corner-top-left {
+      border-top: 2px solid var(--accent-pub-dim);
+      border-left: 2px solid var(--accent-pub-dim);
+    }
+
+    .key-field.public .corner-bottom-right {
+      border-bottom: 2px solid var(--accent-pub-dim);
+      border-right: 2px solid var(--accent-pub-dim);
+    }
+
+    .key-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 9px;
+    }
+
+    .key-label {
+      font-size: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .key-field.private .key-label {
+      color: var(--accent-priv);
+    }
+
+    .key-field.public .key-label {
+      color: var(--accent-pub);
+    }
+
+    .key-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .key-field.private .key-dot {
+      background: var(--dot-priv);
+      box-shadow: 0 0 5px var(--dot-priv);
+    }
+
+    .key-field.public .key-dot {
+      background: var(--dot-pub);
+      box-shadow: 0 0 5px var(--dot-pub);
+    }
+
+    .key-meta {
+      font-size: 9px;
+      font-family: 'Share Tech Mono', monospace;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .key-value {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      color: var(--text-key);
+      letter-spacing: 0.3px;
+      line-height: 1.75;
+      word-break: break-all;
+      padding: 7px 0 9px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 13px;
+      user-select: text;
+      cursor: text;
+      transition: color 0.35s;
+    }
+
+    .key-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .key-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: 'Share Tech Mono', monospace;
+      letter-spacing: 1px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.22s;
+      text-transform: uppercase;
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      color: var(--btn-text);
+    }
+
+    .key-btn:hover {
+      background: var(--btn-bg-hover);
+      color: var(--btn-text-hover);
+    }
+
+    .key-btn.copied {
+      background: var(--btn-ok-bg);
+      border: 1px solid var(--btn-ok-border);
+      color: var(--btn-ok-text);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 22px;
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      line-height: 2.1;
+      transition: color 0.35s;
+    }
+  </style>
+</head>
+<body class="light">
+  <div class="container">
+    <div class="grid-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="content">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-left">
+          <div class="shield-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="title">WireGuard</div>
+            <div class="subtitle">Key Generator</div>
+          </div>
+        </div>
+        <button class="theme-toggle" id="themeToggle">
+          <span class="theme-icon sun">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+          </span>
+          <div class="toggle-track">
+            <div class="toggle-thumb"></div>
+          </div>
+          <span class="theme-icon moon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+
+      <!-- Status -->
+      <div class="status-bar">
+        <div class="status-item">
+          <span class="status-dot"></span>
+          Local Generation
+        </div>
+        <div class="status-divider"></div>
+        <div class="status-item">
+          <span class="status-dot"></span>
+          Web Crypto API
+        </div>
+        <div class="status-divider" id="countDivider" style="display:none;"></div>
+        <div class="status-item" id="countStatus" style="display:none;"></div>
+      </div>
+
+      <!-- Generate Button -->
+      <button class="gen-btn" id="genBtn">
+        <span class="refresh-icon">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+          </svg>
+        </span>
+        <span id="genBtnText">Generate New Pair</span>
+      </button>
+
+      <!-- Keys Container -->
+      <div id="keysContainer"></div>
+
+      <!-- Footer -->
+      <div class="footer">
+        Keys generated locally · Private keys never transmitted<br/>
+        Curve25519 · 256-bit · RFC 7748
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Curve25519 Implementation ────────────────────────────────────────
+    const P = 2n ** 255n - 19n;
+    const A24 = 121665n;
+
+    function mod(a, m = P) {
+      return ((a % m) + m) % m;
+    }
+
+    function modpow(base, exp, m = P) {
+      let r = 1n;
+      base = mod(base, m);
+      while (exp > 0n) {
+        if (exp & 1n) r = mod(r * base, m);
+        exp >>= 1n;
+        base = mod(base * base, m);
+      }
+      return r;
+    }
+
+    function modinv(a) {
+      return modpow(a, P - 2n);
+    }
+
+    function clamp(bytes) {
+      const c = new Uint8Array(bytes);
+      c[0] &= 248;
+      c[31] &= 127;
+      c[31] |= 64;
+      return c;
+    }
+
+    function toBI(bytes) {
+      let r = 0n;
+      for (let i = 0; i < bytes.length; i++) {
+        r |= BigInt(bytes[i]) << BigInt(i * 8);
+      }
+      return r;
+    }
+
+    function toBytes(n) {
+      const b = new Uint8Array(32);
+      let v = mod(n);
+      for (let i = 0; i < 32; i++) {
+        b[i] = Number(v & 0xffn);
+        v >>= 8n;
+      }
+      return b;
+    }
+
+    function x25519(k, u) {
+      let x1 = u, x2 = 1n, z2 = 0n, x3 = u, z3 = 1n, sw = 0n;
+      for (let t = 254; t >= 0; t--) {
+        const kt = (k >> BigInt(t)) & 1n;
+        sw ^= kt;
+        let d;
+        d = sw * (x2 ^ x3); x2 ^= d; x3 ^= d;
+        d = sw * (z2 ^ z3); z2 ^= d; z3 ^= d;
+        sw = kt;
+        const A = mod(x2 + z2), AA = mod(A * A), B = mod(x2 - z2), BB = mod(B * B), E = mod(AA - BB);
+        const C = mod(x3 + z3), D = mod(x3 - z3), DA = mod(D * A), CB = mod(C * B);
+        x3 = modpow(mod(DA + CB), 2n);
+        z3 = mod(x1 * modpow(mod(DA - CB), 2n));
+        x2 = mod(AA * BB);
+        z2 = mod(E * mod(AA + A24 * E));
+      }
+      let d;
+      d = sw * (x2 ^ x3); x2 ^= d; x3 ^= d;
+      d = sw * (z2 ^ z3); z2 ^= d; z3 ^= d;
+      return mod(x2 * modinv(z2));
+    }
+
+    function generateKeypair() {
+      const raw = new Uint8Array(32);
+      crypto.getRandomValues(raw);
+      const clamped = clamp(raw);
+      const pub = x25519(toBI(clamped), 9n);
+      return {
+        privateKey: btoa(String.fromCharCode(...clamped)),
+        publicKey: btoa(String.fromCharCode(...toBytes(pub)))
+      };
+    }
+
+    // ─── UI Logic ──────────────────────────────────────────────────────────
+    let genCount = 0;
+    let currentKeys = { privateKey: '', publicKey: '' };
+
+    // Theme toggle
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      document.body.classList.toggle('dark');
+    });
+
+    // Copy function with fallback
+    function copyToClipboard(text, callback) {
+      const fallback = () => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.left = '-9999px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        callback();
+      };
+
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(callback).catch(fallback);
+      } else {
+        fallback();
+      }
+    }
+
+    // Save to file
+    function saveToFile(text, filename) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Render keys
+    function renderKeys() {
+      const container = document.getElementById('keysContainer');
+      container.innerHTML = '';
+
+      [
+        { label: 'Private Key', value: currentKeys.privateKey, type: 'private', fileId: 'private_key' },
+        { label: 'Public Key', value: currentKeys.publicKey, type: 'public', fileId: 'public_key' }
+      ].forEach(key => {
+        const field = document.createElement('div');
+        field.className = `key-field ${key.type}`;
+        field.innerHTML = `
+          <div class="corner-accent corner-top-left"></div>
+          <div class="corner-accent corner-bottom-right"></div>
+          <div class="key-label-row">
+            <span class="key-label">
+              <span class="key-dot"></span>
+              ${key.label}
+            </span>
+            <span class="key-meta">BASE64 · 256-bit</span>
+          </div>
+          <div class="key-value">${key.value}</div>
+          <div class="key-actions">
+            <button class="key-btn copy-btn">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              Copy
+            </button>
+            <button class="key-btn save-btn">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Save
+            </button>
+          </div>
+        `;
+
+        // Copy button
+        const copyBtn = field.querySelector('.copy-btn');
+        copyBtn.addEventListener('click', () => {
+          copyToClipboard(key.value, () => {
+            copyBtn.classList.add('copied');
+            copyBtn.innerHTML = `
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              Copied
+            `;
+            setTimeout(() => {
+              copyBtn.classList.remove('copied');
+              copyBtn.innerHTML = `
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+              `;
+            }, 1800);
+          });
+        });
+
+        // Save button
+        const saveBtn = field.querySelector('.save-btn');
+        saveBtn.addEventListener('click', () => {
+          saveToFile(key.value, `wireguard_${key.fileId}.txt`);
+        });
+
+        container.appendChild(field);
+      });
+    }
+
+    // Generate keys
+    function generate() {
+      const btn = document.getElementById('genBtn');
+      const btnText = document.getElementById('genBtnText');
+
+      btn.classList.add('generating');
+      btn.disabled = true;
+      btnText.textContent = 'Generating...';
+
+      setTimeout(() => {
+        currentKeys = generateKeypair();
+        genCount++;
+
+        // Update status
+        document.getElementById('countDivider').style.display = 'block';
+        const countStatus = document.getElementById('countStatus');
+        countStatus.style.display = 'block';
+        countStatus.textContent = `#${genCount}`;
+
+        renderKeys();
+
+        btn.classList.remove('generating');
+        btn.disabled = false;
+        btnText.textContent = 'Generate New Pair';
+      }, 340);
+    }
+
+    // Generate button
+    document.getElementById('genBtn').addEventListener('click', generate);
+
+    // Initial generation
+    generate();
+  </script>
+</body>
+</html>
