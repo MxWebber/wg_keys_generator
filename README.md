@@ -13,16 +13,7 @@
 
 ## Использование
 
-Откройте `index.html` в любом современном браузере:
-
-```bash
-# Локально
-open index.html
-
-# Или запустите простой HTTP-сервер
-python -m http.server 8000
-# затем откройте http://localhost:8000
-```
+Откройте приложение: https://mxwebber.github.io/wg_keys_generator/
 
 ## Функции
 
